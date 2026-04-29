@@ -41,13 +41,13 @@ def next_url(link_header: str) -> str | None:
     return None
 
 
-def paginate_uuid(uuid: str, status: str, max_pages: int = 8) -> list:
+def paginate_uuid(uuid: str, status: str, max_pages: int = 4) -> list:
     out: list = []
     url: str | None = URL
     params: dict | None = {"transmitter_uuid": uuid, "status": status}
     pages = 0
     while url and pages < max_pages:
-        time.sleep(2.5)
+        time.sleep(1.5)
         try:
             batch, headers = fetch_url(url, params)
         except requests.RequestException as e:
@@ -67,22 +67,48 @@ def main() -> None:
     sband = [t for t in tx
              if t.get("downlink_low") and 1e9 <= t["downlink_low"] < 4e9
              and t.get("alive")]
-    print(f"S-band transmitters to query: {len(sband)}")
+    print(f"S-band transmitters to query: {len(sband)}", flush=True)
 
+    out = RAW / "satnogs_sband_observations.json"
+    # resume: load any previously fetched obs and skip nothing (just merge)
     all_obs: list = []
+    seen: set[int] = set()
+    if out.exists() and out.stat().st_size > 5:
+        try:
+            existing = json.loads(out.read_text())
+            for o in existing:
+                if o.get("id") and o["id"] not in seen:
+                    seen.add(o["id"])
+                    all_obs.append(o)
+            print(f"Resuming with {len(all_obs)} previously fetched observations",
+                  flush=True)
+        except json.JSONDecodeError:
+            pass
+
+    def flush() -> None:
+        out.write_text(json.dumps(all_obs, indent=2))
+
     for t in sband:
         uuid = t["uuid"]
         nid = t["norad_cat_id"]
         f_ghz = t["downlink_low"] / 1e9
-        print(f"  NORAD {nid:>6}  {t['mode']:<6} {f_ghz:.3f} GHz  uuid={uuid[:10]}…")
+        print(f"  NORAD {nid:>6}  {t['mode']:<6} {f_ghz:.3f} GHz  uuid={uuid[:10]}…",
+              flush=True)
         for status in ("good", "bad"):
-            obs = paginate_uuid(uuid, status)
-            print(f"    status={status:<4}  fetched={len(obs)}")
-            all_obs.extend(obs)
+            obs = paginate_uuid(uuid, status, max_pages=4)
+            new = 0
+            for o in obs:
+                oid = o.get("id")
+                if oid and oid not in seen:
+                    seen.add(oid)
+                    all_obs.append(o)
+                    new += 1
+            print(f"    status={status:<4}  fetched={len(obs)}  new={new}",
+                  flush=True)
+            flush()
 
-    out = RAW / "satnogs_sband_observations.json"
-    out.write_text(json.dumps(all_obs, indent=2))
-    print(f"\nWrote {len(all_obs)} S-band observations -> {out}")
+    flush()
+    print(f"\nWrote {len(all_obs)} S-band observations -> {out}", flush=True)
 
 
 if __name__ == "__main__":
