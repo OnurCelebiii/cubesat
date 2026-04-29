@@ -42,7 +42,6 @@ RX_ANT_GAIN_DBI = {           # typical SatNOGS ground station antennas
     "VHF": 11.0,
     "UHF": 14.0,
     "S": 22.0,
-    "X": 30.0,
     "Other": 10.0,
 }
 SYS_NOISE_TEMP_K = 290.0
@@ -74,6 +73,11 @@ def altitude_from_tle_line2(tle2: str) -> float | None:
 
 
 def freq_band(freq_hz: float | None) -> str:
+    """Return the frequency band label.
+
+    X-band is intentionally outside the scope of this study because no public
+    SatNOGS observations exist for X-band CubeSats — see README.
+    """
     if not freq_hz or freq_hz <= 0:
         return "Unknown"
     f = float(freq_hz)
@@ -83,8 +87,6 @@ def freq_band(freq_hz: float | None) -> str:
         return "UHF"
     if 1e9 <= f < 4e9:
         return "S"
-    if 4e9 <= f < 12e9:
-        return "X"
     return "Other"
 
 
@@ -190,6 +192,13 @@ def main() -> None:
     tles = json.loads((RAW / "celestrak_cubesats.json").read_text())
     txs = json.loads((RAW / "satnogs_transmitters.json").read_text())
     obs = json.loads((RAW / "satnogs_observations.json").read_text())
+    sband_path = RAW / "satnogs_sband_observations.json"
+    if sband_path.exists():
+        s_obs = json.loads(sband_path.read_text())
+        # de-duplicate by observation id
+        seen = {o["id"] for o in obs}
+        obs = obs + [o for o in s_obs if o["id"] not in seen]
+        print(f"Merged S-band observations: +{len(s_obs)} (deduped to total)")
     print(f"Loaded: tles={len(tles)} transmitters={len(txs)} observations={len(obs)}")
 
     # ---- altitude lookup (NORAD -> altitude_km) ----

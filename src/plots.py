@@ -24,7 +24,7 @@ def save(fig, name: str) -> None:
 
 def main() -> None:
     df = pd.read_csv(DATA)
-    band_order = [b for b in ["VHF", "UHF", "S", "X", "Other"] if b in df["band"].unique()]
+    band_order = [b for b in ["VHF", "UHF", "S", "Other"] if b in df["band"].unique()]
 
     # 1. SNR distribution per band
     fig, ax = plt.subplots(figsize=(9, 6))
