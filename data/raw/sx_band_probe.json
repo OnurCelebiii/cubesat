@@ -1,0 +1,90 @@
+[
+  {
+    "band": "S",
+    "norad": 39427,
+    "mode": "FM",
+    "freq_ghz": 2.408,
+    "uuid": "KHqPArZQuvGwpC8ymXRmLs",
+    "good_obs_page1": 1
+  },
+  {
+    "band": "X",
+    "norad": 39430,
+    "mode": "FM",
+    "freq_ghz": 8.198,
+    "uuid": "MLFGaXULhQvetLd9GX9quJ",
+    "good_obs_page1": 0
+  },
+  {
+    "band": "S",
+    "norad": 40055,
+    "mode": "BPSK",
+    "freq_ghz": 2.2344,
+    "uuid": "uxgAC2VPFUkXEHDhqX6TfK",
+    "good_obs_page1": 12
+  },
+  {
+    "band": "S",
+    "norad": 40056,
+    "mode": "BPSK",
+    "freq_ghz": 2.2344,
+    "uuid": "jMPyqHgCJXQFp8w49Pwzec",
+    "good_obs_page1": 1
+  },
+  {
+    "band": "S",
+    "norad": 41340,
+    "mode": "BPSK",
+    "freq_ghz": 2.4003,
+    "uuid": "qJQUey2riSEzVAfTzNpc5d",
+    "good_obs_page1": 2
+  },
+  {
+    "band": "S",
+    "norad": 42847,
+    "mode": "BPSK",
+    "freq_ghz": 2.24,
+    "uuid": "RhfabgL24qHtsbm7GsWzS9",
+    "good_obs_page1": 0
+  },
+  {
+    "band": "S",
+    "norad": 40020,
+    "mode": "FM",
+    "freq_ghz": 2.2344,
+    "uuid": "hNwHfyia6QTKXwih4aRhWM",
+    "good_obs_page1": 0
+  },
+  {
+    "band": "S",
+    "norad": 40119,
+    "mode": "BPSK",
+    "freq_ghz": 2.2343991,
+    "uuid": "SujmS4Nsz6H6kn5A6AeXQb",
+    "good_obs_page1": 25
+  },
+  {
+    "band": "S",
+    "norad": 60243,
+    "mode": "BPSK",
+    "freq_ghz": 2.202,
+    "uuid": "fRJv6i4dbgRsK8iSGVrzFe",
+    "good_obs_page1": 4
+  },
+  {
+    "band": "S",
+    "norad": 60237,
+    "mode": "FSK",
+    "freq_ghz": 2.405,
+    "uuid": "TJuh8g9A2CtVuvDYfcwD9E",
+    "good_obs_page1": 25
+  },
+  {
+    "band": "S",
+    "norad": 60240,
+    "mode": "FM",
+    "freq_ghz": 2.263,
+    "uuid": "LQHNkV4pkZFfYQrmGMJPKG",
+    "good_obs_page1": 0
+  }
+]
