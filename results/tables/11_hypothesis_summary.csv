@@ -1,6 +1,6 @@
 hypothesis,verdict,evidence
-H1: bands differ in SNR (ANOVA),ACCEPT,F-test p=1.63e-50
-H2: altitude lowers SNR,ACCEPT,"r=-0.354, p=3.17e-79"
-H3: rain lowers SNR (lat-zone proxy),ACCEPT,t-test p=6.93e-12
-H4: elevation raises SNR,ACCEPT,"r=0.781, p=0"
-H5: altitude+elevation+freq explain SNR,ACCEPT,"R²=0.932, F-p=0"
+H1: bands differ in SNR (ANOVA),ACCEPT,F-test p=0
+H2: altitude lowers SNR,ACCEPT,"r=-0.421, p=7.35e-148"
+H3: rain lowers SNR (lat-zone proxy),ACCEPT,t-test p=0.00068
+H4: elevation raises SNR,ACCEPT,"r=0.605, p=0"
+H5: altitude+elevation+freq explain SNR,ACCEPT,"R²=0.954, F-p=0"

@@ -12,15 +12,20 @@ real-world data** (no Monte-Carlo simulation).
 | SatNOGS DB transmitters | `https://db.satnogs.org/api/transmitters/` | downlink frequency, mode, baud per CubeSat |
 | SatNOGS Network observations | `https://network.satnogs.org/api/observations/` | real ground-station observation records: max elevation, station lat/lng, vetted status (good/bad/failed), observation frequency |
 
-`src/fetch_data.py` downloads everything into `data/raw/`.
+`src/fetch_data.py` downloads UHF/VHF observations (per-NORAD filter).
+`src/fetch_sband.py` downloads S-band observations (per-transmitter-UUID
+filter, with Link-header pagination, 1.5 s pacing and exponential backoff
+on HTTP 429). Outputs land in `data/raw/`.
 
 ## Pipeline
 
 ```
-fetch_data.py     →  data/raw/*.json   (CelesTrak + SatNOGS)
+fetch_data.py     →  data/raw/*.json   (CelesTrak + SatNOGS UHF/VHF)
+fetch_sband.py    →  data/raw/satnogs_sband_observations.json
 build_dataset.py  →  data/dataset.csv  (joined + computed link-budget metrics)
 analysis.py       →  results/tables/*.csv + results/report.txt  (10 stats methods)
 plots.py          →  results/figures/*.png
+make_report.py    →  rapor.docx        (Turkish project report)
 ```
 
 Reproduce:
@@ -28,9 +33,11 @@ Reproduce:
 ```
 pip install -r requirements.txt
 python src/fetch_data.py
+python src/fetch_sband.py
 python src/build_dataset.py
 python src/analysis.py
 python src/plots.py
+python src/make_report.py
 ```
 
 ## What we compute per observation
@@ -84,31 +91,35 @@ elevation, station latitude.
 Numerical results live in `results/tables/` and the formatted summary in
 `results/report.txt`. Figures are in `results/figures/`.
 
-## Results on real SatNOGS data (n = 2 648 observations)
+## Results on real SatNOGS data (n = 3 431 observations)
 
-Bands present in the joined dataset: **UHF (2 425)**, **VHF (223)**.
-The cubesat group on CelesTrak is dominated by amateur UHF/VHF satellites,
-so S- and X-band do not appear here; the H1 test therefore compares the two
-bands actually present.
+Bands present in the joined dataset: **UHF (2 425)**, **S-band (783)**,
+**VHF (223)**. S-band data are pulled by transmitter UUID via
+`src/fetch_sband.py` from the eleven alive S-band CubeSat transmitters
+listed in the SatNOGS DB. **X-band is intentionally out of scope**: the
+single X-band CubeSat in the SatNOGS DB has zero observations on the
+network, and commercial X-band CubeSat fleets (Capella, ICEYE, Planet) do
+not publish raw observation data. See `data/raw/sx_band_probe.json` for
+the per-transmitter probe results.
 
 | # | Hypothesis | Verdict | Evidence |
 |---|---|---|---|
-| H1 | Bands differ in SNR | **ACCEPT** | ANOVA F = 233.2, p = 1.6 × 10⁻⁵⁰; UHF mean = 34.6 dB, VHF mean = 38.6 dB |
-| H2 | Altitude lowers SNR  | **ACCEPT** | Pearson r = −0.354, p = 3.2 × 10⁻⁷⁹ |
-| H3 | Rain (climate-zone proxy) lowers SNR | **ACCEPT** | t-test tropical vs polar p = 6.9 × 10⁻¹², r(rain_att, snr) = −0.565 |
-| H4 | Higher elevation raises SNR | **ACCEPT** | r = +0.781, p ≈ 0 |
-| H5 | Altitude + elevation + frequency explain SNR | **ACCEPT** | OLS R² = **0.932**, adj-R² = 0.932, F-p ≈ 0 |
+| H1 | Bands differ in SNR | **ACCEPT** | ANOVA p ≈ 0; mean SNR VHF = 38.6 dB, UHF = 34.6 dB, S = 26.0 dB |
+| H2 | Altitude lowers SNR  | **ACCEPT** | Pearson r = −0.421, p = 7.4 × 10⁻¹⁴⁸ |
+| H3 | Rain (climate-zone proxy) lowers SNR | **ACCEPT** | t-test tropical vs polar p = 6.8 × 10⁻⁴ |
+| H4 | Higher elevation raises SNR | **ACCEPT** | r = +0.605, p ≈ 0 |
+| H5 | Altitude + elevation + frequency explain SNR | **ACCEPT** | OLS R² = **0.954**, adj-R² = 0.954, F-p ≈ 0 |
 
-Distance (slant range) is the single strongest predictor — Spearman ρ = −0.86 —
-and elevation explains 61 % of the SNR variance on its own. The full multiple
-regression reaches R² = 0.93, confirming that link-budget physics dominates the
-observed signal-quality variation in the SatNOGS data.
+Distance (slant range) and frequency together drive the FSPL term, so
+band membership is highly significant in the multiple regression. The
+S-band mean is ~9 dB below UHF and ~13 dB below VHF, exactly as the Friis
+1/λ² scaling predicts.
 
 A real outcome label is also available: SatNOGS' `vetted_status`. The
-two-sample test on this label (`successful` vs `failed` observations,
-n = 1 948 vs 700) gives t = 9.83, p ≈ 9 × 10⁻²², so observations that
+two-sample test on this label (successful vs failed observations,
+n = 2 089 vs 1 342) gives t = 27.9, p ≈ 10⁻¹⁴⁴ — observations that
 volunteer ground stations actually decoded successfully also have a higher
-computed SNR — an external sanity check that the link-budget calculation is
+computed SNR, an external sanity check that the link-budget calculation is
 tracking real radio behaviour, not just an artefact of the formula.
 
 Generated artefacts:
