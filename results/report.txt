@@ -1,0 +1,137 @@
+
+==============================================================================
+CubeSat Link Budget – Statistical Analysis on Real SatNOGS Data
+==============================================================================
+
+Observations: 2648
+Bands:        {'UHF': 2425, 'VHF': 223}
+Stations lat range: [-38.3, 63.9]
+Altitude range (km): [345, 888]
+
+==============================================================================
+1) Descriptive statistics
+==============================================================================
+
+      count   mean  median   std    min    max
+band                                          
+UHF    2425  34.61   36.06  3.69  24.86  40.18
+VHF     223  38.63   39.89  4.48  30.84  44.44
+
+Overall SNR:
+count     2648.00
+mean        34.95
+median      36.16
+std          3.92
+min         24.86
+max         44.44
+
+==============================================================================
+2) Shapiro-Wilk normality test (per band, n<=5000)
+==============================================================================
+
+band    n      W      p_value  normal_alpha_0.05
+ UHF 2425 0.8953 8.263630e-38              False
+ VHF  223 0.8478 4.905744e-14              False
+
+==============================================================================
+3) Pearson and Spearman correlations against SNR
+==============================================================================
+
+     variable    n  pearson_r     pearson_p  spearman_rho    spearman_p
+  altitude_km 2648    -0.3544  3.170799e-79       -0.2450  1.697361e-37
+elevation_deg 2648     0.7809  0.000000e+00        0.7545  0.000000e+00
+  distance_km 2648    -0.8444  0.000000e+00       -0.8638  0.000000e+00
+ frequency_hz 2648    -0.3139  1.220267e-61       -0.1751  1.097134e-19
+   gas_att_db 2648    -0.7594  0.000000e+00       -0.8062  0.000000e+00
+  rain_att_db 2648    -0.5652 2.127973e-223       -0.3997 3.960682e-102
+
+==============================================================================
+4) One-way ANOVA — SNR by frequency band (H1)
+==============================================================================
+
+F = 233.155,  p = 1.634e-50  ***
+
+==============================================================================
+5) Kruskal-Wallis non-parametric ANOVA
+==============================================================================
+
+H = 218.774,  p = 1.674e-49  ***
+
+==============================================================================
+6) Mann-Whitney U pairwise (Bonferroni-corrected)
+==============================================================================
+
+band_A band_B  n_A  n_B        U        p_raw       p_bonf
+   UHF    VHF 2425  223 108801.0 1.675622e-49 1.675622e-49
+
+==============================================================================
+7) Simple linear regressions on SNR
+==============================================================================
+
+            x   slope  intercept       r     r2  p_value  stderr    n
+  altitude_km -0.0122    41.4316 -0.3544 0.1256      0.0  0.0006 2648
+elevation_deg  0.1265    28.7297  0.7809 0.6098      0.0  0.0020 2648
+  distance_km -0.0075    41.2988 -0.8444 0.7130      0.0  0.0001 2648
+
+==============================================================================
+8) Multiple linear regression: SNR ~ altitude + elevation + freq + band-dummies
+==============================================================================
+
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                 snr_db   R-squared:                       0.932
+Model:                            OLS   Adj. R-squared:                  0.932
+Method:                 Least Squares   F-statistic:                     9119.
+Date:                Wed, 29 Apr 2026   Prob (F-statistic):               0.00
+Time:                        10:41:40   Log-Likelihood:                -3808.4
+No. Observations:                2648   AIC:                             7627.
+Df Residuals:                    2643   BIC:                             7656.
+Df Model:                           4                                         
+Covariance Type:            nonrobust                                         
+=================================================================================
+                    coef    std err          t      P>|t|      [0.025      0.975]
+---------------------------------------------------------------------------------
+const            40.9761      0.472     86.855      0.000      40.051      41.901
+altitude_km      -0.0156      0.000    -82.924      0.000      -0.016      -0.015
+elevation_deg     0.1301      0.001    158.194      0.000       0.128       0.132
+frequency_ghz   -11.1497      1.132     -9.854      0.000     -13.368      -8.931
+band_VHF          3.6459      0.336     10.863      0.000       2.988       4.304
+==============================================================================
+Omnibus:                      322.491   Durbin-Watson:                   1.942
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):              472.464
+Skew:                          -0.898   Prob(JB):                    2.55e-103
+Kurtosis:                       4.029   Cond. No.                     3.47e+04
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 3.47e+04. This might indicate that there are
+strong multicollinearity or other numerical problems.
+
+==============================================================================
+9) Two-sample hypothesis tests
+==============================================================================
+
+                                     test  n_A  n_B      stat      p_value
+           tropical vs polar (rain proxy)  336 1379 -7.058298 6.932341e-12
+               elevation>=49.0° vs <49.0° 1371 1277 48.044078 0.000000e+00
+successful obs vs failed obs (real label) 1948  700  9.829451 9.447293e-22
+
+==============================================================================
+10) 95% confidence intervals for mean SNR per band
+==============================================================================
+
+band    n   mean  ci_low  ci_high
+ UHF 2425 34.610  34.463   34.757
+ VHF  223 38.629  38.037   39.221
+
+==============================================================================
+Hypothesis verdicts
+==============================================================================
+
+                             hypothesis verdict             evidence
+        H1: bands differ in SNR (ANOVA)  ACCEPT    F-test p=1.63e-50
+                H2: altitude lowers SNR  ACCEPT r=-0.354, p=3.17e-79
+   H3: rain lowers SNR (lat-zone proxy)  ACCEPT    t-test p=6.93e-12
+               H4: elevation raises SNR  ACCEPT         r=0.781, p=0
+H5: altitude+elevation+freq explain SNR  ACCEPT      R²=0.932, F-p=0

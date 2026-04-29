@@ -1,0 +1,4 @@
+test,n_A,n_B,stat,p_value
+tropical vs polar (rain proxy),336,1379,-7.0582977277620005,6.932341399490342e-12
+elevation>=49.0° vs <49.0°,1371,1277,48.04407752051442,0.0
+successful obs vs failed obs (real label),1948,700,9.829451499658544,9.447292682659902e-22
